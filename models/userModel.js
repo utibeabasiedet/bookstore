@@ -15,8 +15,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    isAdmin: {
+        type: Boolean,
+        required: true,
+        default: false, // Regular users are not admins by default
+    },
 });
 
+// Password hashing logic before saving the user
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         next();
@@ -25,6 +31,7 @@ userSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
+// Method to compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };

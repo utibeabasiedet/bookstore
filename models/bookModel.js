@@ -5,19 +5,23 @@ const bookSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    author: {
-        type: String,
-        required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
+    
+    prices: {
+        NGN: { type: Number, required: true },
+        EU: { type: Number, required: true },
+        UK: { type: Number, required: true },
+        US: { type: Number, required: true },
+      },
     description: {
         type: String,
+    },
+    image: {
+        type: String, // URL of the image stored in Cloudinary
+        required: false,
     },
 });
 
 const Book = mongoose.model('Book', bookSchema);
 
-module.exports = Book;
+module.exports = Book; 
+

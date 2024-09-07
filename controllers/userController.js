@@ -2,59 +2,96 @@ const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 
 // Register a new user
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+  const { name, email, password, isAdmin } = req.body; // Added isAdmin field
 
-    const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ email });
 
-    if (userExists) {
-        res.status(400).json({ message: 'User already exists' });
-        return;
-    }
+  if (userExists) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+  }
 
-    const user = await User.create({
-        name,
-        email,
-        password,
-    });
+  const user = await User.create({
+      name,
+      email,
+      password,
+      isAdmin: isAdmin || false,  // Default isAdmin to false if not provided
+  });
 
-    if (user) {
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(400).json({ message: 'Invalid user data' });
-    }
+  if (user) {
+      const token = generateToken(user._id);
+      
+      // Send HTTP-only cookie
+      res.cookie('token', token, {
+          path: '/',
+          httpOnly: true,
+          expires: new Date(Date.now() + 1000 * 86400), // 1 day
+          sameSite: 'none',
+          secure: true,
+      });
+
+      res.status(201).json({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,  // Include isAdmin in response
+          token: token,
+      });
+  } else {
+      res.status(400).json({ message: 'Invalid user data' });
+  }
 });
+
 
 // Login user
-const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(401).json({ message: 'Invalid email or password' });
+const loginUser = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      // Perform login logic here
+      const user = await User.findOne({ email });
+  
+      if (!user || !(await user.matchPassword(password))) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      // Create token
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: '1d',
+      });
+  
+      // Set cookie
+      res.cookie('token', token, {
+        httpOnly: true,  // Accessible only by the server
+        secure: process.env.NODE_ENV === 'production', // Set secure to true in production (HTTPS)
+        sameSite: 'strict', // Prevent CSRF
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+  
+      res.status(200).json({ message: 'Login successful' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
     }
-});
+  };
+  
 
-// Logout user
+
 const logoutUser = (req, res) => {
-    res.cookie('token', '', { httpOnly: true, expires: new Date(0) });
+    res.cookie('token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // `true` only in production
+      sameSite: 'strict',  // Prevent CSRF
+      expires: new Date(0),  // Expire the cookie immediately
+      path: '/',  // Ensure this matches the path where the cookie is set
+    });
     res.status(200).json({ message: 'Logged out successfully' });
-};
+  };
+  
+  
 
 // Get user profile
 const getUserProfile = asyncHandler(async (req, res) => {
@@ -99,6 +136,11 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 const getAllUsers = asyncHandler(async (req, res) => {
     const users = await User.find({});
     res.json(users);
+});
+// Get one user
+const getUser = asyncHandler(async (req, res) => {
+    const user =  await User.findById(req.params.id);
+    res.json(user);
 });
 
 // Delete user
@@ -150,19 +192,38 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // Login status
-const loginStatus = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-
-    if (user) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-        });
-    } else {
-        res.status(401).json({ message: 'Not logged in' });
-    }
+const loginStatusuu = asyncHandler(async (req, res) => {
+    const token = req.cookies.token;
+  if (!token) {
+    return res.json(false);
+  }
+  // Verify Token
+  const verified = jwt.verify(token, process.env.JWT_SECRET);
+  if (verified) {
+    return res.json(true);
+  }
+  return res.json(false);
 });
+const loginStatus = (req, res) => {
+    try {
+      const token = req.cookies.token; // Ensure that the token is being read from the cookies
+  
+      if (!token) {
+        return res.json({ isLoggedIn: false }); // No token found, user is not logged in
+      }
+  
+      // Verify token (you should use the same secret as when you created the token)
+      jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+          return res.json({ isLoggedIn: false }); // Invalid token
+        }
+  
+        return res.json({ isLoggedIn: true, userId: decoded.id }); // Valid token
+      });
+    } catch (error) {
+      return res.json({ isLoggedIn: false });
+    }
+  };
 
 module.exports = {
     registerUser,
@@ -176,4 +237,5 @@ module.exports = {
     forgotPassword,
     resetPassword,
     loginStatus,
+    getUser
 };
