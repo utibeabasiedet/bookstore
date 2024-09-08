@@ -22,16 +22,26 @@ app.use(cors({
 }));
 
 // Set headers for all routes
+// Set headers for all routes
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  const origin = req.headers.origin;
+  
+  // Check if origin is present before setting the header
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
   res.setHeader('Access-Control-Allow-Credentials', 'true'); // Allow cookies
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200); // Preflight request for CORS
   }
+  
   next();
 });
+
 
 
 // Import routes
