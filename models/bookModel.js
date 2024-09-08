@@ -15,7 +15,7 @@ const bookSchema = new mongoose.Schema({
     description: {
         type: String,
     },
-    image: {
+    imageUrl: {
         type: String, // URL of the image stored in Cloudinary
         required: false,
     },

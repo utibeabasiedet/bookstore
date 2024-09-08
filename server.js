@@ -13,19 +13,26 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+
+
+app.use(cors({
+  origin: ["http://localhost:3000", "https://bookstore-1-ooja.onrender.com"], // Add your frontend URLs
+  credentials: true, // Allow credentials (cookies, headers, etc.)
+}));
+
+// Set headers for all routes
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true'); // Allow cookies
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200); // Preflight request for CORS
+  }
   next();
-});    
-app.use(
-  cors({
-    origin: ["https://bookstore-1-ooja.onrender.com", "http://localhost:3000"],
-    credentials: true,
-    optionSuccessStatus:200 
-  })
-);
+});
+
 
 // Import routes
 const bookRoutes = require('./routes/bookRoutes');

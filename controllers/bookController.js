@@ -1,9 +1,10 @@
+const mongoose = require('mongoose');
 const Book = require("../models/bookModel");
 
 // Get all books
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.find(); // Assuming you're using Mongoose
+    const books = await Book.find();
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -26,9 +27,10 @@ const addBook = async (req, res) => {
     if (!image) {
       return res.status(400).json({ error: 'Image is required' });
     }
+    console.log(req.file);
 
     // Get the Cloudinary image URL from the multer upload
-    const imageUrl = image.path; // `multer-storage-cloudinary` stores the URL in `file.path`
+    const imageUrl = image.path;
 
     // Create a new book instance with the extracted data
     const newBook = new Book({
@@ -45,6 +47,7 @@ const addBook = async (req, res) => {
 
     // Save the book to the database
     await newBook.save();
+    console.log(newBook);
 
     // Send a success response
     res.status(201).json({ message: 'Book created successfully!', book: newBook });
@@ -53,10 +56,6 @@ const addBook = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while creating the book' });
   }
 };
-
-
-
-
 
 // Edit a book
 const editBook = async (req, res) => {
@@ -71,7 +70,7 @@ const editBook = async (req, res) => {
     book.prices = prices || book.prices;
     book.description = description || book.description;
     if (image) {
-      book.image = image;
+      book.imageUrl = image; // Update the imageUrl field
     }
 
     const updatedBook = await book.save();
@@ -80,7 +79,6 @@ const editBook = async (req, res) => {
     res.status(404).json({ message: "Book not found" });
   }
 };
-
 
 // Delete a book
 const deleteBook = async (req, res) => {
@@ -95,6 +93,7 @@ const deleteBook = async (req, res) => {
   }
 };
 
+// Delete all books
 const deleteAllBooks = async (req, res) => {
   // Check if the user is an admin
   if (!req.user || !req.user.isAdmin) {
