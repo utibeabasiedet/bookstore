@@ -49,34 +49,44 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Login user
 const loginUser = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      // Perform login logic here
-      const user = await User.findOne({ email });
-  
-      if (!user || !(await user.matchPassword(password))) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-  
-      // Create token
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: '1d',
-      });
-  
-      // Set cookie
-      res.cookie('token', token, {
-        httpOnly: true,  // Accessible only by the server
-        secure: process.env.NODE_ENV === 'production', // Set secure to true in production (HTTPS)
-        sameSite: 'strict', // Prevent CSRF
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-      });
-  
-      res.status(200).json({ message: 'Login successful' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+  try {
+    const { email, password } = req.body;
+
+    // Perform login logic here
+    const user = await User.findOne({ email });
+
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
-  };
+
+    // Create token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,  // Accessible only by the server
+      secure: process.env.NODE_ENV === 'production', // Set secure to true in production (HTTPS)
+      sameSite: 'strict', // Prevent CSRF
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    // Return token and user information
+    res.status(200).json({
+      message: 'Login successful',
+      token,  // Return token as part of the response
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
   
 
 
