@@ -3,63 +3,36 @@ const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
 
 // Controller to add an item to the cart
-// const addToCart = asyncHandler(async (req, res) => {
-//   const { item } = req.body;
-
-//   // Get the logged-in user's ID from the request (ensure the user is authenticated)
-//   const userId = req.user._id; // Assuming the user ID is set in the request via middleware
-
-//   // Find the user's cart
-//   let cart = await Cart.findOne({ userId });
-
-//   // If the cart doesn't exist, create a new one
-//   if (!cart) {
-//     cart = new Cart({ userId, items: [] });
-//   }
-
-//   // Check if the item already exists in the cart
-//   const itemExists = cart.items.find(cartItem => cartItem._id === item._id);
-//   if (itemExists) {
-//     res.status(400).json({ message: "Item already in cart" });
-//     return;
-//   }
-
-//   // Add the item to the cart
-//   cart.items.push(item);
-
-//   // Save the cart
-//   await cart.save();
-
-//   res.json(cart);
-// });
-
 const addToCart = asyncHandler(async (req, res) => {
-  const { bookId, title, price, imageUrl } = req.body;
+  const { item } = req.body;
 
-  const userId = req.user._id; // User ID from protected route
+  // Get the logged-in user's ID from the request (ensure the user is authenticated)
+  const userId = req.user._id; // Assuming the user ID is set in the request via middleware
 
   // Find the user's cart
   let cart = await Cart.findOne({ userId });
 
-  // Create a new cart if none exists
+  // If the cart doesn't exist, create a new one
   if (!cart) {
     cart = new Cart({ userId, items: [] });
   }
 
   // Check if the item already exists in the cart
-  const itemExists = cart.items.find(item => item.bookId.equals(bookId));
+  const itemExists = cart.items.find(cartItem => cartItem._id === item._id);
   if (itemExists) {
-    return res.status(400).json({ message: "Item already in cart" });
+    res.status(400).json({ message: "Item already in cart" });
+    return;
   }
 
-  // Add the new item to the cart
-  cart.items.push({ bookId, title, price, imageUrl });
+  // Add the item to the cart
+  cart.items.push(item);
 
   // Save the cart
   await cart.save();
 
   res.json(cart);
 });
+
 
 
 const getCartItems = asyncHandler(async (req, res) => {
@@ -82,7 +55,7 @@ const getCartItems = asyncHandler(async (req, res) => {
     const userId = req.user._id;
   
     // Find the user's cart
-    const cart = await Cart.findOne({ userId });
+    const cart = await Cart.findOne({ userId }); 
   
     if (!cart) {
       res.status(404).json({ message: "Cart not found" });
