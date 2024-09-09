@@ -16,11 +16,11 @@ const protect = asyncHandler(async (req, res, next) => {
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // console.log('Decoded Token:', decoded); // Debugging
+      console.log('Decoded Token:', decoded); // Debugging
 
-      // // Attach user information to the request object
-      // req.user = await User.findById(decoded.id).select('-password');
-      // console.log('User from Token:', req.user); // Debugging
+      // Attach user information to the request object
+      req.user = await User.findById(decoded.id).select('-password');
+      console.log('User from Token:', req.user); // Debugging
 
       if (!req.user) {
         return res.status(404).json({ message: 'User not found' });
