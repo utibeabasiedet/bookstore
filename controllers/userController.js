@@ -65,12 +65,15 @@ const loginUser = async (req, res) => {
     });
 
     // Set cookie
-    res.cookie('token', token, {
-      httpOnly: true,  // Accessible only by the server
-      secure: process.env.NODE_ENV === 'production', // Set secure to true in production (HTTPS)
-      sameSite: 'strict', // Prevent CSRF
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    // Set cookie
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 1000 * 86400), // 1 day  
+      sameSite: "none",
+      secure: true,
     });
+
 
     // Return token and user information
     res.status(200).json({
