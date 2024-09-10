@@ -61,7 +61,7 @@ const loginUser = async (req, res) => {
 
     // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: '1d',
     });
 
     // Set cookie
@@ -93,16 +93,19 @@ const loginUser = async (req, res) => {
   
 
 
-const logoutUser = (req, res) => {
-    res.cookie('token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // `true` only in production
-      sameSite: 'strict',  // Prevent CSRF
-      expires: new Date(0),  // Expire the cookie immediately
-      path: '/',  // Ensure this matches the path where the cookie is set
-    });
-    res.status(200).json({ message: 'Logged out successfully' });
-  };
+const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie('token', '', {
+    path: '/',  // Ensure the path is correct
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: 'None',
+    secure: true,  // Set to true for secure environments (HTTPS)
+  });
+
+  res.status(200).json({ message: 'Logged out successfully' });
+});
+
+
   
   
 
