@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://bookstore-1-ooja.onrender.com","https://bookstorefrontend-e7b5.vercel.app"], // Add your frontend URLs
+  origin: ["http://localhost:3000","https://bookstorefrontend-e7b5.vercel.app"], // Add your frontend URLs
   credentials: true, // Allow credentials (cookies, headers, etc.)
 }));
 

@@ -11,6 +11,24 @@ const getBooks = async (req, res) => {
   }
 };
 
+// Get singlr book
+// Get a single book by ID
+const getBookById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const book = await Book.findById(id);
+
+    if (book) {
+      res.status(200).json(book);
+    } else {
+      res.status(404).json({ message: "Book not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Add a new book
 const addBook = async (req, res) => {
   try {
@@ -109,4 +127,4 @@ const deleteAllBooks = async (req, res) => {
   }
 };
 
-module.exports = { getBooks, addBook, editBook, deleteBook, deleteAllBooks };
+module.exports = { getBooks, addBook, editBook, deleteBook,getBookById , deleteAllBooks };
