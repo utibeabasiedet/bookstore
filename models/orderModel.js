@@ -9,11 +9,11 @@ const orderSchema = new mongoose.Schema({
     orderItems: [
         {
             title: { type: String, required: true },
-            author: { type: String, required: true },
+           
             price: { type: Number, required: true },
             quantity: { 
                 type: Number, 
-                required: true, 
+                required: false, 
                 default: 1 // Default quantity is 1
             },
             book: {
