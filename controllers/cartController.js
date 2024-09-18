@@ -85,4 +85,23 @@ const deleteCartItem = asyncHandler(async (req, res) => {
   res.json(cart);
 });
 
-module.exports = { addToCart, getCartItems, deleteCartItem };
+const clearCart = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  // Find the user's cart
+  const cart = await Cart.findOne({ userId });
+
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found" });
+  }
+
+  // Clear all items from the cart by setting the items array to an empty array
+  cart.items = [];
+
+  // Save the updated cart
+  await cart.save();
+
+  res.json({ message: "All items removed from cart", cart });
+});
+
+module.exports = { addToCart, getCartItems, deleteCartItem ,clearCart };
