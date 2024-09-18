@@ -50,6 +50,7 @@ const userRoutes = require('./routes/userRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const emailRoutes = require("./routes/emailRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 
 // Use routes
@@ -59,6 +60,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/cart', cartRoutes); // Mount the cart routes
 // Register the email routes
 app.use("/api/mymail", emailRoutes);
+app.use("/api/myorder", orderRoutes);
 
 
 app.get('/', (req, res) => {
