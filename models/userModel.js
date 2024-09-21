@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    phoneNumber: {
+        type: String,
+        required: true,
+        unique: true, // To ensure no duplicate phone numbers
+    },
+    
     isAdmin: {
         type: Boolean,
         required: true,

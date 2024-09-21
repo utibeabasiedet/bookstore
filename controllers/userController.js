@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 
 // Register a new user
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, isAdmin } = req.body; // Added isAdmin field
+  const { name, email, password, isAdmin, phoneNumber } = req.body; // Added isAdmin field
 
   const userExists = await User.findOne({ email });
 
@@ -19,6 +19,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name,
       email,
       password,
+      phoneNumber,
       isAdmin: isAdmin || false,  // Default isAdmin to false if not provided
   });
 
@@ -38,6 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
+          phoneNumber: user.phoneNumber,
           isAdmin: user.isAdmin,  // Include isAdmin in response
           token: token,
       });
@@ -84,6 +86,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        phoneNumber: user.phoneNumber
       }
     });
   } catch (error) {
@@ -113,9 +116,10 @@ const getUserProfile = asyncHandler(async (req, res) => {
     if (user) {
         res.json({
             _id: user._id,
-            
+            name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
+            phoneNumber: user.phoneNumber
 
         });
     } else {
@@ -170,6 +174,17 @@ const deleteUser = asyncHandler(async (req, res) => {
     }
 });
 
+const deleteAllUsers = asyncHandler(async (req, res) => {
+  const result = await User.deleteMany({}); // Deletes all users
+
+  if (result.deletedCount > 0) {
+      res.json({ message: `${result.deletedCount} users removed` });
+  } else {
+      res.status(404).json({ message: 'No users found to delete' });
+  }
+});
+
+
 // Change password
 const changePassword = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
@@ -207,18 +222,18 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // Login status
-const loginStatusuu = asyncHandler(async (req, res) => {
-    const token = req.cookies.token;
-  if (!token) {
-    return res.json(false);
-  }
-  // Verify Token
-  const verified = jwt.verify(token, process.env.JWT_SECRET);
-  if (verified) {
-    return res.json(true);
-  }
-  return res.json(false);
-});
+// const loginStatus= asyncHandler(async (req, res) => {
+//     const token = req.cookies.token;
+//   if (!token) {
+//     return res.json(false);
+//   }
+//   // Verify Token
+//   const verified = jwt.verify(token, process.env.JWT_SECRET);
+//   if (verified) {
+//     return res.json(true);
+//   }
+//   return res.json(false);
+// });
 const loginStatus = (req, res) => {
     try {
       const token = req.cookies.token; // Ensure that the token is being read from the cookies
@@ -248,6 +263,7 @@ module.exports = {
     updateUserProfile,
     getAllUsers,
     deleteUser,
+    deleteAllUsers ,
     changePassword,
     forgotPassword,
     resetPassword,
