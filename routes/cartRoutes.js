@@ -1,5 +1,5 @@
 const express = require('express');
-const { addToCart ,getCartItems, deleteCartItem,clearCart } = require('../controllers/cartController');
+const { addToCart ,getCartItems, deleteCartItem,clearCart,isBookInCart  } = require('../controllers/cartController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -9,6 +9,8 @@ router.post('/add', protect, addToCart);
 
 // Route to get cart items
 router.get("/", protect, getCartItems);
+
+router.get('/check-book/:bookId',protect, isBookInCart);
 
 
 

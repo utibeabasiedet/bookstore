@@ -85,6 +85,27 @@ const deleteCartItem = asyncHandler(async (req, res) => {
   res.json(cart);
 });
 
+const isBookInCart = asyncHandler(async (req, res) => {
+  const { bookId } = req.params;
+  
+  const userId = req.user._id;
+
+  // Find the user's cart
+  const cart = await Cart.findOne({ userId });
+
+  if (!cart) {
+    // If the cart doesn't exist, return false
+    return res.json({ inCart: false });
+  }
+
+  // Check if the book is already in the cart
+  const itemExists = cart.items.some(cartItem => cartItem._id.toString() === bookId);
+
+  // Return a response indicating whether the book is in the cart
+  res.json({ inCart: itemExists });
+});
+
+
 const clearCart = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
@@ -104,4 +125,4 @@ const clearCart = asyncHandler(async (req, res) => {
   res.json({ message: "All items removed from cart", cart });
 });
 
-module.exports = { addToCart, getCartItems, deleteCartItem ,clearCart };
+module.exports = { addToCart, getCartItems, deleteCartItem ,clearCart ,isBookInCart };
